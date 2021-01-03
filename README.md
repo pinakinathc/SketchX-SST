@@ -10,7 +10,7 @@ This is a server-side code that servers client-end code found [here](https://git
 - The server verifies the client (or user) and saves the sketch and caption in a JSON file.
 - Assumption: size of the data collection is small like 1GB. There is no database linked to it. A large-scale data collection needs a separate database (like MongoDB etc.)
 
-### author: pinakinathc
+### author: [pinakinathc](http://www.pinakinathc.me)
 
 ## Instruction:
 
@@ -25,4 +25,3 @@ This is a server-side code that servers client-end code found [here](https://git
 #### If you got stuck or need my assistance:
 - Create an issue in this repository.
 - Drop an email at: ```contact@pinakinathc.me```
-- 
