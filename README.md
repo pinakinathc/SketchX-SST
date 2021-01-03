@@ -18,6 +18,7 @@ This is a server-side code that servers client-end code found [here](https://git
 - ```git clone https://github.com/pinakinathc/SketchX-SST.git```
 - ```cd SketchX-SST```
 - ```npm init```
+- ```python create_all_data_json.py``` (this creates a dummy all_data.json file. Modify it for your own future use.)
 - ```node --max-old-space-size=7168 index.js```
 - If you are using your personal computer, your web server is now running at 127.0.0.1:8000. Go to <http://127.0.0.1:8000>.
 - If you are using something like AWS, GCP or Linode or have a Public IP then, Go to ```http://<Your Public IP>:8000```.
