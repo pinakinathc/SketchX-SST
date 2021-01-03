@@ -1,7 +1,6 @@
 # SketchX-SST Server-End Code
 
 ## Description:
-
 This is a server-side code that servers client-end code found [here](https://github.com/pinakinathc/pinakinathc.github.io/blob/master/projects/_posts/sketchx-sst.html).
 
 - It sends an image URL to the client (or user) which it recognize.
@@ -13,7 +12,6 @@ This is a server-side code that servers client-end code found [here](https://git
 ### author: [pinakinathc](http://www.pinakinathc.me)
 
 ## Instruction:
-
 - Install NodeJS and NPM. You can check [this](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) link to know how to install NodeJS and NPM.
 - ```git clone https://github.com/pinakinathc/SketchX-SST.git```
 - ```cd SketchX-SST```
