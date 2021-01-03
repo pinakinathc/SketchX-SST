@@ -23,6 +23,11 @@ This is a server-side code that servers client-end code found [here](https://git
 - If you are using your personal computer, your web server is now running at 127.0.0.1:8000. Go to <http://127.0.0.1:8000>.
 - If you are using something like AWS, GCP or Linode or have a Public IP then, Go to ```http://<Your Public IP>:8000```.
 
+### Render collected data from ```all_data.json```
+- Install Numpy, OpenCV, ```pip install bresenham```
+- ```python renderer.py```
+- Rendered Sketches are generated inside ```output/``` folder.
+
 #### If you got stuck or need my assistance:
 - Create an issue in this repository.
 - Drop an email at: ```contact@pinakinathc.me```
