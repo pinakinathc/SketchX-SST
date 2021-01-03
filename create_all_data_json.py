@@ -30,7 +30,7 @@ if __name__ == '__main__':
         all_data['users'][user] = []
         all_data[user] = {}
 
-        for image_url in url_list[N*idx: N*(idx+1)]: # Each user is assigned 100 Images
+        for image_url in url_list[N*idx: N*(idx+1)]: # Each user is assigned N Images
             all_data['users'][user].append(image_url)
 
     with open('all_data_skeleton.json', 'w') as fp:
