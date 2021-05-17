@@ -148,7 +148,7 @@ app.post('/inspect', async (req, res) => {
 	let query = req.body;
 	const access_id = query['access_id'];
 
-	if (access_id != 'vijay-cvssp') {
+	if (access_id != 'sketchx-cvssp') {
 		logger.log({level: 'info', message: 'Invalid access_id for inspection.'});
 		res.end('Invalid access_id');
 	}

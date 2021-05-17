@@ -302,7 +302,7 @@
             canvas.style.display = "inline-block";
             canvas_title.style.display = "inline-block";
             btn_next.disabled = true;
-            var time = 5; //30;
+            var time = 30;
             var x = setInterval(function(){
                 canvas_title.textContent = "Image "+ (img_idx+1) +" out of 100 will disapear in "+ time + " seconds."
                 time--;
@@ -323,7 +323,7 @@
             btn_next.disabled = true;
             btn_clear.style.display = "inline-block";
             record_stroke = true;
-            var time = 5; //60;
+            var time = 60;
             var x = setInterval(function(){
                 canvas_title.textContent = "Sketch the scene that you saw within "+ time + " seconds."
                 time--;
