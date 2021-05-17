@@ -6,6 +6,6 @@
 
 **Description:**
 
-I shall later update instructions of how to use it. Currently, you can put simply use it via ```npm install`` and ```sudo node server.js```.
+I shall later update instructions of how to use it. Currently, you can put simply use it via ```npm install``` and ```sudo node server.js```.
 
 Check my group at: [sketchx.ai](sketchx.ai)
