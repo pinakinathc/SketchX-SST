@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <title>Sketchx Sst</title>
+	    <link rel="stylesheet" href="http://www.pinakinathc.me/assets/css/styles.css">
+	</head>
+
+	<body>
+		<nav style="text-align: center; word-spacing: 70px; font-size: x-large">
+		    <a href="http://www.pinakinathc.me/">Home</a>
+		    <a href="http://www.pinakinathc.me/about.html">About</a>
+		    <a href="http://www.pinakinathc.me/research.html">Research</a>
+		    <a href="http://www.pinakinathc.me/blog.html">Blog</a>
+		    <a href="http://www.pinakinathc.me/projects.html">Projects</a>
+		</nav>
+
+		<div style="text-align: center">
+			<img src="http://sketchx.eecs.qmul.ac.uk/wp-content/uploads/sites/27/2019/03/cropped-cropped-logo_v6.jpg" style="height: 5%; width: 35%">
+    		<h1>SketchX Scene Sketching Tool</h1>
+
+    		<code> This is an internal link. The page won't respond without proper authentication. If you are unauthorized, please avoid visiting this page to keep serve load to a minimum. Thank you!! </code>
+
+    		<h3>Enter User ID to inspect: 
+    			<input type="number" id="userID" max="100", min="1" value="">
+    			<input type="button" onclick="search_userid()" value="Inspect Me!">
+    		</h3>
+
+    		<code id="canvas_title", style="text-align: left; display: none;"></code><br>
+    		<canvas id="show_img" style="border: 3px solid #c3c3c3; display: none;" width="952" height="628">Please use a web-browser supporting HTML5 i.e. some latest like Chromium or Firefox or Chrome or Safari etc.</canvas>
+    		<canvas id="show_sketch" style="border: 3px solid #c3c3c3; display: none;">Please use a web-browser supporting HTML5 i.e. some latest one like Chromium or Firefox or Chrome or Safari etc.</canvas>
+    		<textarea disabled id="caption" style="width: 70%; height: 20%; display: none;"></textarea><br>
+
+    		<button id="btn_prev" onclick="prev_data_fn()" style="display: none;">Previous annotation</button>
+    		<button id="btn_next" onclick="next_data_fn()" style="display: none;">Next annotation</button>
+    		<button id="btn_del" onclick="del_data_fn()" style="display: none;">Delete annotation</button>
+
+		</div>
+
+		<script type="text/javascript">
+			const server_url = "http://127.0.0.1:8000";
+			const access_id = prompt("Enter authentication Access ID.");
+			const canvas = document.getElementById("show_img");
+			const canvas_sketch = document.getElementById("show_sketch");
+			var ctx = canvas.getContext("2d");
+			var ctx_sketch = canvas_sketch.getContext("2d");
+
+			const btn_prev = document.getElementById("btn_prev");
+			const btn_next = document.getElementById("btn_next");
+			const btn_del = document.getElementById("btn_del");
+
+			canvas.width = Math.round(document.body.offsetWidth * 0.35);
+            canvas_sketch.width = Math.round(document.body.offsetWidth * 0.35);
+            canvas.height = Math.round(document.body.offsetWidth * 0.35);
+            canvas_sketch.height = Math.round(document.body.offsetWidth * 0.35);
+
+			var canvas_title = document.getElementById("canvas_title");
+			var caption = document.getElementById("caption");
+			var user_id = document.getElementById("userID");
+			var curr_idx = 0;
+			var data = [];
+
+			function search_userid() {
+				user_id = document.getElementById("userID");
+				console.log(user_id.value);
+				if (user_id == null) { // Sanity Check
+					alert ("Enter User ID to search.");
+					return;
+				}
+
+				curr_idx = 0;
+				const post_json = {
+					"access_id": String(access_id),
+					"user_id": String(user_id.value),
+					"curr_idx": String(curr_idx),
+					"delete": false
+				}
+				post_JSON(post_json);
+			}
+
+
+			function post_JSON(post_json) {
+				let img = new Image;
+				let xhr = new XMLHttpRequest();
+				xhr.open("POST", server_url+"/inspect", true);
+                xhr.setRequestHeader('X-PINGOTHER', 'pingpong');
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+                xhr.setRequestHeader("Access-Control-Allow-Methods", "POST");
+                xhr.setRequestHeader("Access-Control-Allow-Credentials", "true");
+                xhr.onreadystatechange = function () {
+                	var response_data = xhr.responseText;
+
+                	if (response_data == 'Invalid access_id') { // Authentication
+                		alert ('Invalid access_id: '+String(access_id));
+                		return;
+                	}
+
+                	img.onload = function() {
+                		ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height);
+                		redraw(ctx_sketch, canvas_sketch);
+
+                	}
+                	if (response_data == "Image not found") {
+                		alert ("No more images for User: "+String(user_id.value)+" Image ID: "+String(curr_idx+1));
+                		return;
+                	} else if (response_data == "User not Found") {
+                		alert("User_ID: "+String(user_id.value)+" not recognised. Please reload page and enter User_ID correctly.");
+                        return;
+                	} else {
+                		response_data = JSON.parse(response_data);
+                		img_url = response_data['img_url'];
+                		img_idx = parseInt(response_data['index']);
+                		img.src = img_url;
+                		caption.textContent = response_data['caption'];
+                		data = response_data['sketch_data'];
+
+                		// Show Canvas
+                		caption.style.display = "inline-block";
+                		canvas.style.display = "inline-block";
+                		canvas_sketch.style.display = "inline-block";
+                		canvas_title.style.display = "inline-block";
+
+                		// Show buttons
+                		btn_prev.style.display = "inline-block";
+                		btn_next.style.display = "inline-block";
+                		if (access_id == 'vijay-cvssp') {btn_del.style.display = "inline-block";}
+
+                		canvas_title.textContent = "User ID: "+String(user_id.value)+"; Image ID: "+String(curr_idx+1)+" of 100 images";
+                	}
+                }
+                xhr.send(JSON.stringify(post_json));
+			}
+
+
+			function prev_data_fn() {
+				if (curr_idx == 0) {
+					alert ('Cannot go previous as this is the first image.');
+					return;
+				}
+				curr_idx = curr_idx - 1;
+				canvas_title.textContent = "User ID: "+String(user_id.value)+"; Image ID: "+String(curr_idx+1)+" of 100 images";
+				const post_json = {
+					"access_id": String(access_id),
+					"user_id": String(user_id.value),
+					"curr_idx": String(curr_idx),
+					"delete": false
+				}
+				post_JSON(post_json);
+			}
+
+
+			function next_data_fn() {
+				curr_idx = curr_idx + 1;
+				canvas_title.textContent = "User ID: "+String(user_id.value)+"; Image ID: "+String(curr_idx+1)+" of 100 images";
+				const post_json = {
+					"access_id": String(access_id),
+					"user_id": String(user_id.value),
+					"curr_idx": String(curr_idx),
+					"delete": false
+				}
+				post_JSON(post_json);
+			}
+
+
+			function del_data_fn() {
+				let verify = prompt("Type `yes` to delete this entry of User: "+String(user_id.value)+" Image ID: "+String(curr_idx+1));
+
+				if (verify != "yes") {
+					alert("NOT deleted. Click Delete button and then type yes to delete.");
+					return;
+				}
+
+				const delete_query = {
+					"access_id": String(access_id),
+					"user_id": String(user_id.value),
+					"curr_idx": String(curr_idx),
+					"delete": true
+				}
+
+				let xhr = new XMLHttpRequest();
+				xhr.open("POST", server_url+"/inspect", true);
+                xhr.setRequestHeader('X-PINGOTHER', 'pingpong');
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+                xhr.setRequestHeader("Access-Control-Allow-Methods", "POST");
+                xhr.setRequestHeader("Access-Control-Allow-Credentials", "true");
+                xhr.onreadystatechange = function () {
+                	var response_data = xhr.responseText;
+
+                	if (response_data == "deleted") {
+                		alert('Entry deleted.');
+
+                		curr_idx = 0;
+                		const post_json = {
+							"access_id": String(access_id),
+							"user_id": String(user_id.value),
+							"curr_idx": String(curr_idx),
+							"delete": false
+						}
+						post_JSON(post_json);
+                	} else if (response_data == 'access id Invalid') {
+                		alert("Access ID: "+String(access_id)+" is Invalid.");
+                	}
+                }
+                xhr.send(JSON.stringify(delete_query));
+			}
+
+
+	        function redraw(draw_ctx, draw_canvas) {
+	            draw_ctx.clearRect(0, 0, draw_canvas.width, draw_canvas.height);
+	            if (data.length == 0) return;
+
+	            x = Math.round(data[0]['coordinates'][0] * draw_canvas.width);
+	            y = Math.round(data[0]['coordinates'][1] * draw_canvas.height);
+	            draw_ctx.beginPath();
+	            draw_ctx.moveTo(x, y);
+	            prev = false;
+	            for (let i=1; i<data.length; i++) {
+	                x = Math.round(data[i]['coordinates'][0] * draw_canvas.width);
+	                y = Math.round(data[i]['coordinates'][1] * draw_canvas.height);
+	                pen_state = data[i]['pen_state'];
+	                if (pen_state[0] == 0 && pen_state[1] == 1) {
+	                    if (prev == false) {
+	                        draw_ctx.beginPath();
+	                        draw_ctx.moveTo(x, y);
+	                        prev = true;
+	                    }
+	                    else {draw_ctx.lineTo(x, y);}
+	                }
+	                else {
+	                    draw_ctx.stroke();
+	                    prev = false;
+	                }
+	            }
+	            draw_ctx.stroke();
+	        }
+
+		</script>
+	</body>
+</html>

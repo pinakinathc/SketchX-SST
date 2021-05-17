@@ -1,16 +1,28 @@
 {
   "name": "sketchx-sst",
   "version": "1.0.0",
-  "description": "Scene Sketching Tool developed by SketchX",
-  "main": "index.js",
+  "description": "Annotation Tool to collect Scene Sketches along with Captions at large scale.",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
-  "author": "pinakinathc",
+  "keywords": [],
+  "author": "Pinaki Nath Chowdhury",
   "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "express-openid-connect": "^2.3.1",
+    "mongodb": "^3.6.6",
     "winston": "^3.3.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pinakinathc/SketchX-SST.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pinakinathc/SketchX-SST/issues"
+  },
+  "homepage": "https://github.com/pinakinathc/SketchX-SST#readme"
 }
