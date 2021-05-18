@@ -18,8 +18,8 @@ const logger = winston.createLogger({
 });
 
 app.use(cors());
-app.use(bodyParser.json({limit: '1300mb'}));
-app.use(bodyParser.urlencoded({limit: '1300mb', extended: true}));
+app.use(bodyParser.json({limit: '13000mb'}));
+app.use(bodyParser.urlencoded({limit: '13000mb', extended: true, parameterLimit: 10000000}));
 
 
 app.get('/', (req, res) => { // Homepage

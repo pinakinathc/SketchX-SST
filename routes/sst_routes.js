@@ -13,8 +13,8 @@ const logger = winston.createLogger({
 
 
 const bodyParser = require('body-parser');
-app.use(bodyParser.json({limit: '1300mb'}));
-app.use(bodyParser.urlencoded({limit: '1300mb', extended: true}));
+app.use(bodyParser.json({limit: '13000mb'}));
+app.use(bodyParser.urlencoded({limit: '13000mb', extended: true, parameterLimit: 10000000}));
 
 // Connection URL
 const url = 'mongodb://127.0.0.1';
