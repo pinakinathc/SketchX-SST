@@ -10,7 +10,7 @@ class Connect(object):
 		return MongoClient("mongodb://127.0.0.1/")
 
 client = Connect.get_connection()
-db = client.testing
+db = client.sketchxsst
 
 with open('./data/list_imgs.txt', 'r') as fp:
 	list_img_ids = fp.read().split('\n')[:-1]

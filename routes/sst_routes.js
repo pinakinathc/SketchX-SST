@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({limit: '1300mb', extended: true}));
 const url = 'mongodb://127.0.0.1';
 
 // Database name
-const dbName = 'testing';
+const dbName = 'sketchxsst';
 
 app.post('/get', async (req, res) => {
 	let query = req.body;

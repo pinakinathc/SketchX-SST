@@ -8,7 +8,7 @@ const router = require('./routes/sst_routes.js') // Routing
 
 const app = express();
 const bodyParser = require('body-parser');
-const port = 8000;
+const port = 80;
 
 const logger = winston.createLogger({
         transports: [
