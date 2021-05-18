@@ -34,7 +34,7 @@ app.post('/get', async (req, res) => {
 		const db = client.db(dbName);
 
 		// Query an entry
-		var data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
+		let data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
 
 		// Check if valid UserID
 		if (data.length == 0) {
@@ -44,7 +44,7 @@ app.post('/get', async (req, res) => {
 		}
 
 		data = data[0];
-		var curr_idx = data['curr_idx'];
+		let curr_idx = data['curr_idx'];
 
 		if (curr_idx == data['all_img_urls'].length) {
 			res.end('None');
@@ -66,7 +66,7 @@ app.post('/get', async (req, res) => {
 			assert(!null, index);
 
 			img_url = String(img_url);
-			var reply_data = JSON.stringify({
+			let reply_data = JSON.stringify({
 				'index': String(index),
 				'img_url': img_url
 			});
@@ -97,7 +97,7 @@ app.post('/submit', async (req, res) => {
 		logger.log({level: 'info', message: 'Connected correctly to server'});
 		const db = client.db(dbName);
 
-		var data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
+		let data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
 
 		// Check if valid UserID
 		if (data.length == 0) {
@@ -117,7 +117,7 @@ app.post('/submit', async (req, res) => {
 		}
 
 		// Check if entry already exists
-		var annotated_urls = [];
+		let annotated_urls = [];
 		for (let i=0; i<data[0]['annotation'].length; i++) {
 			annotated_urls.push(data[0]['annotation'][i]['img_url']);
 		} if (annotated_urls.includes(img_url)) {
@@ -172,7 +172,7 @@ app.post('/inspect', async (req, res) => {
 		logger.log({level: 'info', message: 'Connected correctly to server'});
 		const db = client.db(dbName);
 
-		var data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
+		let data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
 
 		// Check if valid UserID
 		if (data.length == 0) {
@@ -197,7 +197,7 @@ app.post('/inspect', async (req, res) => {
 			)
 			res.end('deleted');
 		} else {
-			var reply_data = JSON.stringify({
+			let reply_data = JSON.stringify({
 				'img_url': data['annotation'][curr_idx]['img_url'],
 				'sketch_data': data['annotation'][curr_idx]['sketch_data'],
 				'caption': data['annotation'][curr_idx]['caption']
