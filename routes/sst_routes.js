@@ -116,6 +116,15 @@ app.post('/submit', async (req, res) => {
             return;
 		}
 
+		// Check if entry already exists
+		var annotated_urls = [];
+		for (let i=0; i<data[0]['annotation'].length; i++) {
+			annotated_urls.push(data[0]['annotation'][i]['img_url']);
+		} if (annotated_urls.includes(img_url)) {
+			res.end("Img already annotated");
+			return;
+		}
+
 		// Update and push entry
 		await db.collection('inventory').updateOne(
 			{'userID': user_id},

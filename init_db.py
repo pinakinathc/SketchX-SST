@@ -21,10 +21,10 @@ for img_id in list_img_ids:
 	print (img_url)
 	list_img_urls.append(img_url)
 
-for user_id in range(100):
+for user_id in range(1, 101):
 	query = {
 		'userID': user_id,
-		'all_img_urls': list_img_urls[user_id: user_id+100],
+		'all_img_urls': list_img_urls[(user_id-1)*100: (user_id-1)*100+100],
 		'curr_idx': 0,
 		'annotation': [],
 	}

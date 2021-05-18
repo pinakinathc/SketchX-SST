@@ -40,6 +40,7 @@
 
 		<script type="text/javascript">
 			const server_url = "http://sketchx-sst.pinakinathc.me";
+			// const server_url = "http://127.0.0.1";
 			const access_id = prompt("Enter authentication Access ID.");
 			const canvas = document.getElementById("show_img");
 			const canvas_sketch = document.getElementById("show_sketch");
@@ -125,7 +126,7 @@
                 		// Show buttons
                 		btn_prev.style.display = "inline-block";
                 		btn_next.style.display = "inline-block";
-                		if (access_id == 'vijay-cvssp') {btn_del.style.display = "inline-block";}
+                		if (access_id == 'sketchx-cvssp') {btn_del.style.display = "inline-block";}
 
                 		canvas_title.textContent = "User ID: "+String(user_id.value)+"; Image ID: "+String(curr_idx+1)+" of 100 images";
                 	}
