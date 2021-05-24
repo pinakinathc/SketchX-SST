@@ -30,8 +30,8 @@
         <h3>Instructions...</h3>
         <ul>
             <li>Click on <b>Next button</b> to view a new Scene Image.</li>
-            <li>The image will be put up for display for 30 seconds.</li>
-            <li>After 30 seconds, <b>Sketch the scene that you saw within 60 seconds</b></li>
+            <li>The image will be put up for display for 60 seconds.</li>
+            <li>After 30 seconds, <b>Sketch the scene that you saw within 180 seconds</b></li>
         </ul>
     </div>
     <br>
@@ -302,7 +302,7 @@
             canvas.style.display = "inline-block";
             canvas_title.style.display = "inline-block";
             btn_next.disabled = true;
-            var time = 30;
+            var time = 60;
             var x = setInterval(function(){
                 canvas_title.textContent = "Image "+ (img_idx+1) +" out of 100 will disapear in "+ time + " seconds."
                 time--;
@@ -323,7 +323,7 @@
             btn_next.disabled = true;
             btn_clear.style.display = "inline-block";
             record_stroke = true;
-            var time = 60;
+            var time = 180;
             var x = setInterval(function(){
                 canvas_title.textContent = "Sketch the scene that you saw within "+ time + " seconds."
                 time--;

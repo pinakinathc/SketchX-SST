@@ -160,6 +160,7 @@ app.post('/inspect', async (req, res) => {
 	if (access_id != 'sketchx-cvssp') {
 		logger.log({level: 'info', message: 'Invalid access_id for inspection.'});
 		res.end('Invalid access_id');
+		return;
 	}
 
 	const user_id = Number(String(query['user_id']));
@@ -209,6 +210,7 @@ app.post('/inspect', async (req, res) => {
 
 		// Close connection
 		client.close();
+		return;
 	} catch(err) {
 		logger.log({level: 'warn', message: err.stack});
 		console.log(err.stack);
