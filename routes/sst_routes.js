@@ -20,7 +20,7 @@ app.use(bodyParser.urlencoded({limit: '13000mb', extended: true, parameterLimit:
 const url = 'mongodb://127.0.0.1';
 
 // Database name
-const dbName = 'sketchxsst';
+const dbName = 'sketchxsst_large';
 
 app.post('/get', async (req, res) => {
 	let query = req.body;
@@ -34,7 +34,7 @@ app.post('/get', async (req, res) => {
 		const db = client.db(dbName);
 
 		// Query an entry
-		let data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
+		let data = await db.collection('inventory').find({'userID': user_id}).toArray();
 
 		// Check if valid UserID
 		if (data.length == 0) {
@@ -43,31 +43,20 @@ app.post('/get', async (req, res) => {
             return;
 		}
 
-		data = data[0];
-		let curr_idx = data['curr_idx'];
+		let curr_idx = null;
+		for (let i=0; i<data.length; i++){
+			if (data[i]['annotation'] == null) {
+				curr_idx = i;
+				break;
+			}
+		}
 
-		if (curr_idx == data['all_img_urls'].length) {
+		if (curr_idx == null) {
 			res.end('None');
 		} else {
-			var annotated_urls = [];
-			for (let i=0; i<data['annotation'].length; i++) {
-				annotated_urls.push(data['annotation'][i]['img_url']);
-			}
-
-			let index = null;
-			let img_url = null;
-			for (let i=0; i<data['all_img_urls'].length; i++) {
-				img_url = data['all_img_urls'][i];
-				if (!annotated_urls.includes(img_url)) {
-					index = i;
-					break;
-				}
-			}
-			assert(!null, index);
-
-			img_url = String(img_url);
+			img_url = String(data[curr_idx]['img_url']);
 			let reply_data = JSON.stringify({
-				'index': String(index),
+				'index': String(curr_idx),
 				'img_url': img_url
 			});
 			logger.info('User: '+user_id+' asked for Image: '+ img_url);
@@ -97,7 +86,7 @@ app.post('/submit', async (req, res) => {
 		logger.log({level: 'info', message: 'Connected correctly to server'});
 		const db = client.db(dbName);
 
-		let data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
+		let data = await db.collection('inventory').find({'userID': user_id, 'img_url': img_url}).limit(1).toArray();
 
 		// Check if valid UserID
 		if (data.length == 0) {
@@ -106,40 +95,25 @@ app.post('/submit', async (req, res) => {
             return;
 		}
 
-		curr_idx = data[0]['curr_idx'];
-		all_img_urls = data[0]['all_img_urls'];
-
-		// Check if image IMG URL is valid
-		if (!all_img_urls.includes(img_url)) {
-			logger.log({level: 'warn', message: 'User: '+user_id+' submitted annotation for unrecognized image: '+img_url});
-            res.end("Img URL Not Found");
-            return;
-		}
-
-		// Check if entry already exists
-		let annotated_urls = [];
-		for (let i=0; i<data[0]['annotation'].length; i++) {
-			annotated_urls.push(data[0]['annotation'][i]['img_url']);
-		} if (annotated_urls.includes(img_url)) {
+		//check if entry already exists
+		if (data[0]['annotation'] != null) {
 			res.end("Img already annotated");
 			return;
 		}
 
-		// Update and push entry
+		// Update entry
 		await db.collection('inventory').updateOne(
-			{'userID': user_id},
-			{$push: {
+			{'userID': user_id, 'img_url': img_url},
+			{$set: {
 				'annotation': {
 					'img_url': img_url,
 					'sketch_data': sketch_data,
-					'caption': caption
+					'caption': caption					
 				}
 			}});
 
-		await db.collection('inventory').updateOne(
-				{'userID': user_id},
-				{$set: {curr_idx: curr_idx+1}}
-			);
+		curr_idx = data[0]['curr_idx'];
+		all_img_urls = data[0]['all_img_urls'];
 
 		logger.log({level: 'info', message: 'User: '+user_id+' submitted annotation for Image: '+img_url});
         res.end('Data written');
@@ -173,7 +147,7 @@ app.post('/inspect', async (req, res) => {
 		logger.log({level: 'info', message: 'Connected correctly to server'});
 		const db = client.db(dbName);
 
-		let data = await db.collection('inventory').find({'userID': user_id}).limit(1).toArray();
+		let data = await db.collection('inventory').find({'userID': user_id}).toArray();
 
 		// Check if valid UserID
 		if (data.length == 0) {
@@ -182,10 +156,9 @@ app.post('/inspect', async (req, res) => {
             client.close();
             return;
 		}
-		data = data[0];
 
-		if (data['annotation'].length == 0 || curr_idx >= data['annotation'].length) {
-			logger.log({level: 'info', message: 'No more images for User: '+String(user_id)});
+		if (data[curr_idx]['annotation'] == null) {
+			logger.log({level: 'info', message: 'Image: '+String(curr_idx)+' not annotated by User: '+String(user_id)});
 			res.end('Image not found');
 			client.close();
 			return;
@@ -193,21 +166,21 @@ app.post('/inspect', async (req, res) => {
 
 		if (query['delete'] == true) {
 			await db.collection('inventory').updateOne(
-				{'userID': user_id},
-				{$pull: {'annotation': {'img_url': data['annotation'][curr_idx]['img_url']}}}
-			)
+				{'userID': user_id, 'img_url': data[curr_idx]['img_url']},
+				{$set: {'annotation': null}}
+				)
 			res.end('deleted');
-		} else {
-			let reply_data = JSON.stringify({
-				'img_url': data['annotation'][curr_idx]['img_url'],
-				'sketch_data': data['annotation'][curr_idx]['sketch_data'],
-				'caption': data['annotation'][curr_idx]['caption']
-			});
-			logger.log({level: 'info', 
-				message:'Inspection for UserID: '+String(user_id)+' ID: '+String(curr_idx)});
-			res.end(reply_data);
-		}
-
+			} else {
+				let reply_data = JSON.stringify({
+					'img_url': data[curr_idx]['img_url'],
+					'sketch_data': data[curr_idx]['annotation']['sketch_data'],
+					'caption': data[curr_idx]['annotation']['caption']
+				});
+				logger.log({level: 'info', 
+					message:'Inspection for UserID: '+String(user_id)+' ID: '+String(curr_idx)});
+				res.end(reply_data);	
+			}
+		
 		// Close connection
 		client.close();
 		return;

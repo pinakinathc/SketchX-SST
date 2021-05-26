@@ -10,7 +10,7 @@ class Connect(object):
 		return MongoClient("mongodb://127.0.0.1/")
 
 client = Connect.get_connection()
-db = client.sketchxsst
+db = client.sketchxsst_large
 
 with open('./data/list_imgs.txt', 'r') as fp:
 	list_img_ids = fp.read().split('\n')[:-1]
@@ -22,10 +22,10 @@ for img_id in list_img_ids:
 	list_img_urls.append(img_url)
 
 for user_id in range(1, 101):
-	query = {
-		'userID': user_id,
-		'all_img_urls': list_img_urls[(user_id-1)*100: (user_id-1)*100+100],
-		'curr_idx': 0,
-		'annotation': [],
-	}
-	db.inventory.insert_one(query)
+	for img_url in list_img_urls[(user_id-1)*100: (user_id-1)*100+100]:
+		query = {
+			'userID': user_id,
+			'img_url': img_url,
+			'annotation': None
+		}
+		db.inventory.insert_one(query)
