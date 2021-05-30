@@ -35,6 +35,8 @@
     		<button id="btn_prev" onclick="prev_data_fn()" style="display: none;">Previous annotation</button>
     		<button id="btn_next" onclick="next_data_fn()" style="display: none;">Next annotation</button>
     		<button id="btn_del" onclick="del_data_fn()" style="display: none;">Delete annotation</button>
+    		<button id="btn_edit" onclick="edit_data_fn()" style="display: none;">Edit</button>
+    		<button id="btn_update" onclick="submit_data_fn()" style="display: none;">Update</button>
 
 		</div>
 
@@ -50,6 +52,8 @@
 			const btn_prev = document.getElementById("btn_prev");
 			const btn_next = document.getElementById("btn_next");
 			const btn_del = document.getElementById("btn_del");
+			const btn_edit = document.getElementById("btn_edit");
+			const btn_update = document.getElementById("btn_update");
 
 			canvas.width = Math.round(document.body.offsetWidth * 0.35);
             canvas_sketch.width = Math.round(document.body.offsetWidth * 0.35);
@@ -75,7 +79,8 @@
 					"access_id": String(access_id),
 					"user_id": String(user_id.value),
 					"curr_idx": String(curr_idx),
-					"delete": false
+					"delete": false,
+					"update": false
 				}
 				post_JSON(post_json);
 			}
@@ -114,7 +119,7 @@
                 		img_url = response_data['img_url'];
                 		img_idx = parseInt(response_data['index']);
                 		img.src = img_url;
-                		caption.textContent = response_data['caption'];
+                		caption.value = String(response_data['caption']);
                 		data = response_data['sketch_data'];
 
                 		// Show Canvas
@@ -126,7 +131,10 @@
                 		// Show buttons
                 		btn_prev.style.display = "inline-block";
                 		btn_next.style.display = "inline-block";
-                		if (access_id == 'sketchx-cvssp') {btn_del.style.display = "inline-block";}
+                		if (access_id == 'sketchx-cvssp') {
+                			btn_del.style.display = "inline-block";
+                			btn_edit.style.display = "inline-block";
+                		}
 
                 		canvas_title.textContent = "User ID: "+String(user_id.value)+"; Image ID: "+String(curr_idx+1)+" of 100 images";
                 	}
@@ -146,7 +154,8 @@
 					"access_id": String(access_id),
 					"user_id": String(user_id.value),
 					"curr_idx": String(curr_idx),
-					"delete": false
+					"delete": false,
+					"update": false
 				}
 				post_JSON(post_json);
 			}
@@ -159,7 +168,8 @@
 					"access_id": String(access_id),
 					"user_id": String(user_id.value),
 					"curr_idx": String(curr_idx),
-					"delete": false
+					"delete": false,
+					"update": false
 				}
 				post_JSON(post_json);
 			}
@@ -177,7 +187,8 @@
 					"access_id": String(access_id),
 					"user_id": String(user_id.value),
 					"curr_idx": String(curr_idx),
-					"delete": true
+					"delete": true,
+					"update": false
 				}
 
 				let xhr = new XMLHttpRequest();
@@ -198,7 +209,8 @@
 							"access_id": String(access_id),
 							"user_id": String(user_id.value),
 							"curr_idx": String(curr_idx),
-							"delete": false
+							"delete": false,
+							"update": false
 						}
 						post_JSON(post_json);
                 	} else if (response_data == 'access id Invalid') {
@@ -206,6 +218,67 @@
                 	}
                 }
                 xhr.send(JSON.stringify(delete_query));
+			}
+
+
+			function edit_data_fn() {
+				btn_update.style.display = "inline-block";
+				caption.disabled = false;
+			}
+
+
+			function submit_data_fn() {
+				btn_update.style.display = "none";
+				caption.disabled = true;
+				let verify = prompt("Type `yes` to update this entry of User: "+String(user_id.value)+" Image ID: "+String(curr_idx+1));
+
+				if (verify != "yes") {
+					alert("NOT Updated. Click Edit button and try again.");
+					return;
+				}
+
+				const update_query = {
+					"access_id": String(access_id),
+					"user_id": String(user_id.value),
+					"curr_idx": String(curr_idx),
+					"delete": false,
+					"update": true,
+					"caption": String(caption.value)
+				}
+
+	            if (update_query['caption'].length == 0) {
+	                alert("please enter the caption to describe your sketch");
+	                verify();
+	                return;
+	            }
+	            let xhr = new XMLHttpRequest();
+	            xhr.open("POST", server_url+"/inspect", true);
+	            xhr.setRequestHeader('X-PINGOTHER', 'pingpong');
+	            xhr.setRequestHeader("Content-Type", "application/json");
+	            xhr.setRequestHeader("Access-Control-Allow-Origin", "*");
+	            xhr.setRequestHeader("Access-Control-Allow-Methods", "POST");
+	            xhr.setRequestHeader("Access-Control-Allow-Credentials", "true");
+	            xhr.onreadystatechange = function () {
+                	var response_data = xhr.responseText;
+
+                	if (response_data == "updated") {
+                		alert('Entry updated.');
+                		caption.textContent = '';
+
+                		curr_idx = 0;
+                		const post_json = {
+							"access_id": String(access_id),
+							"user_id": String(user_id.value),
+							"curr_idx": String(curr_idx),
+							"delete": false,
+							"update": false,
+						}
+						post_JSON(post_json);
+                	} else if (response_data == 'access id Invalid') {
+                		alert("Access ID: "+String(access_id)+" is Invalid.");
+                	}
+	            }
+	            xhr.send(JSON.stringify(update_query));
 			}
 
 

@@ -131,7 +131,7 @@ app.post('/inspect', async (req, res) => {
 	let query = req.body;
 	const access_id = query['access_id'];
 
-	if (access_id != 'sketchx-cvssp') {
+	if (access_id != 'sketchx-cvssp') { // Hard-coded access_id
 		logger.log({level: 'info', message: 'Invalid access_id for inspection.'});
 		res.end('Invalid access_id');
 		return;
@@ -170,16 +170,23 @@ app.post('/inspect', async (req, res) => {
 				{$set: {'annotation': null}}
 				)
 			res.end('deleted');
-			} else {
-				let reply_data = JSON.stringify({
-					'img_url': data[curr_idx]['img_url'],
-					'sketch_data': data[curr_idx]['annotation']['sketch_data'],
-					'caption': data[curr_idx]['annotation']['caption']
-				});
-				logger.log({level: 'info', 
-					message:'Inspection for UserID: '+String(user_id)+' ID: '+String(curr_idx)});
-				res.end(reply_data);	
-			}
+		} else if (query['update'] == true){
+			await db.collection('inventory').updateOne(
+				{'userID': user_id, 'img_url': data[curr_idx]['img_url']},
+				{$set: {
+					'annotation.caption': String(query['caption'])
+				}})
+			res.end('updated');
+		} else {
+			let reply_data = JSON.stringify({
+				'img_url': data[curr_idx]['img_url'],
+				'sketch_data': data[curr_idx]['annotation']['sketch_data'],
+				'caption': data[curr_idx]['annotation']['caption']
+			});
+			logger.log({level: 'info', 
+				message:'Inspection for UserID: '+String(user_id)+' ID: '+String(curr_idx)});
+			res.end(reply_data);	
+		}
 		
 		// Close connection
 		client.close();
