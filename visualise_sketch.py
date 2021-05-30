@@ -6,6 +6,9 @@ import cv2
 import numpy as np
 from bresenham import bresenham
 # import matplotlib.pyplot as plt
+import tqdm
+import requests
+import shutil
 from pymongo import MongoClient
 
 
@@ -49,21 +52,44 @@ class Connect(object):
 		return MongoClient("mongodb://127.0.0.1/")
 
 
+# Declare database name, output_dir, sketchycoco_dir
 client = Connect.get_connection()
-db = client.sketchxsst
+db = client.sketchxsst_large
 
 output_dir = 'raster_images'
+coco_dir = '/home/pinaki/surrey/vol/research/sketchcaption/phd/dataset/COCO-stuff/images/train2017'
+sketchycoco_dir = '/home/pinaki/surrey/vol/research/sketchcaption/phd/dataset/SketchyCOCO/Scene/Sketch/paper_version/'
+
 os.makedirs(os.path.join(os.getcwd(), output_dir), exist_ok=True)
+os.makedirs(os.path.join(os.getcwd(), output_dir, 'sketches'), exist_ok=True)
+os.makedirs(os.path.join(os.getcwd(), output_dir, 'images'), exist_ok=True)
+os.makedirs(os.path.join(os.getcwd(), output_dir, 'sketchycoco'), exist_ok=True)
+os.makedirs(os.path.join(os.getcwd(), output_dir, 'text'), exist_ok=True)
+
+list_of_all_imgs = [] # Will be used for sanity check
+count_duplicates = 0
 
 for idx in range(1, 101): # UserID from 1 to 100
+# for idx in [8, 9, 13, 14, 15, 19, 23, 27, 63]:
 	data = list(db.inventory.find({'userID': idx}))
 
-	if len(data[0]['annotation']) == 0:
+	num_anns = sum([x['annotation'] is not None for x in data])
+	if num_anns == 0:
+		print ('skipping UserID: %d'%idx)
 		continue
 
-	os.makedirs(os.path.join(os.getcwd(), output_dir, str(idx)), exist_ok=True)
+	print('User: %d, # of annotations: %d'%(idx, num_anns))
 
-	for annotation in data[0]['annotation']:
+	os.makedirs(os.path.join(os.getcwd(), output_dir, 'sketches', str(idx)), exist_ok=True)
+	os.makedirs(os.path.join(os.getcwd(), output_dir, 'images', str(idx)), exist_ok=True)
+	os.makedirs(os.path.join(os.getcwd(), output_dir, 'sketchycoco', str(idx)), exist_ok=True)
+	os.makedirs(os.path.join(os.getcwd(), output_dir, 'text', str(idx)), exist_ok=True)
+
+	# for annotation in data[0]['annotation']:
+	for cell in tqdm.tqdm(data):
+		annotation = cell['annotation']
+		if annotation is None:
+			continue
 		sketch_data = annotation['sketch_data']
 		img_url = annotation['img_url']
 		caption = annotation['caption']
@@ -73,12 +99,49 @@ for idx in range(1, 101): # UserID from 1 to 100
 		# if time <= 60: # conditional constrain
 		# 	continue
 
-		print (img_url)
-		print (caption)
+		# print (img_url)
+		# print (caption)
 
 		img_name = os.path.split(img_url)[-1]
-		cv2.imwrite(os.path.join(os.getcwd(), output_dir, str(idx), img_name), raster_img)
+
+		# Sanity check
+		if img_name in list_of_all_imgs:
+			print ('>>>>>>>>>>>>>>>\n\n\nDuplicate entry: %s for UserID: %d \n\n\n<<<<<<<<<<<<<<<<'%(img_name, idx))
+			count_duplicates += 1
+		# assert img_name not in list_of_all_imgs, 'Duplicate entry: %s for UserID: %d'%(img_name, idx)
+		list_of_all_imgs.append(img_name)
+
+		# Write rasterised scene sketch
+		cv2.imwrite(os.path.join(os.getcwd(), output_dir, 'sketches', str(idx), img_name), raster_img)
+
+		# Write RGB image from coco
+		if coco_dir is None:
+			rgb_img = requests.get(img_url).content
+			with open(os.path.join(os.getcwd(), output_dir, 'images', str(idx), img_name), 'wb') as fp:
+				fp.write(rgb_img)
+		else:
+			shutil.copy(os.path.join(coco_dir, img_name), os.path.join(os.getcwd(), output_dir, 'images', str(idx), img_name))
+
+		# Write Synthetic SketchyCOCO
+		if sketchycoco_dir is not None:
+			path1 = os.path.join(sketchycoco_dir, 'trainInTrain', img_name[:-3]+'png')
+			path2 = os.path.join(sketchycoco_dir, 'valInTrain', img_name[:-3]+'png')
+
+			if os.path.exists(path1):
+				shutil.copy(path1, os.path.join(os.getcwd(), output_dir, 'sketchycoco', str(idx), img_name[:-3]+'png'))
+
+			elif os.path.exists(path2):
+				shutil.copy(path2, os.path.join(os.getcwd(), output_dir, 'sketchycoco', str(idx), img_name[:-3]+'png'))
+
+			else:
+				raise AssertionError('Cannot find corresponding Synthetic sketch in %s or %s'%(path1, path2))
+
+		# Write Caption
+		with open(os.path.join(os.getcwd(), output_dir, 'text', str(idx), img_name[:-3]+'txt'), 'w') as fp:
+			fp.write(caption)
 		
 		## For visualisation
 		# plt.imshow(raster_img, cmap='gray')
 		# plt.show()
+
+print ('Total duplicates: %d'%count_duplicates)
