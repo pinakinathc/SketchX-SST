@@ -34,6 +34,12 @@ app.get('/inspect', (req, res) => { // Inspect data
 });
 
 
+app.get('/sain', (req, res) => { // Inspect data
+	logger.log({level: 'info', message: 'GET request from ' + req.socket.remoteAddress});
+	res.sendFile(__dirname+'/sain.html');
+});
+
+
 // Additional routing with linking to DB
 app.use(router);
 
